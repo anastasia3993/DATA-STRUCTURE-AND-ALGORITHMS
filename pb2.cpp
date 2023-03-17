@@ -1,275 +1,259 @@
 #include <iostream>
+#include <stdlib.h>
 
 using namespace std;
 
 template<typename DT>
-class Arbore;
+class ListaD2;
 
 template<typename DT>
 class Nod;
 
-template <class DT>
-class  Nod
+template<typename DT>
+class Nod
 {
-private:
-    Nod<DT>* st;
-    Nod<DT>* dr;
-    DT data;
-
+	DT info;
+	Nod* urm; // legatura la nodul urmator
+	Nod* ant; // legatura la nodul anterior
 public:
-    Nod()
-    {
-        st = NULL;
-        dr = NULL;
-    }
-    Nod(DT x)
-    {
-        data = x;
-        st = NULL;
-        dr = NULL;
-    }
-    friend class Arbore<DT>;
+	Nod()
+	{
+		urm = ant = NULL;
+	}
+	Nod(int x)
+	{
+		info = x;
+		urm = ant = NULL;
+	}
+	~Nod()
+	{
+		if (urm)
+			delete urm; // APEL destructor clasa Nod
+
+	}
+	friend class ListaD2<DT>;
+
 };
 
-template <class DT>
-class Arbore
-{
-private:
-    Nod<DT>* rad;
+template<typename DT>
+class ListaD2
+{ //protected:
+	Nod<DT>* inc, * crt, * sf;
 public:
-    Arbore()
-    {
-        rad = NULL;
-    }
-    bool gol() {
-        return(rad == NULL);
-    }
-    void insert(DT item)
-    {
-        Nod<DT>* nou_nod = new Nod<DT>(item);
-        int poz[50], dim = 0, i;
-        if (gol())
-        {
-            rad = nou_nod;
-        }
+	ListaD2();
+	int push_back(const DT&);
+	int push_front(const DT&);
+	void pop_back(int);
+	int pop_front();
 
-        else
-        {
-            dim = numara_nod(rad) + 1;
-            int i = 0;
-            while (dim)
-            {
-                if (dim % 2 == 1)
-                {
-                    poz[i] = 1;
+	int size();
+	bool empty();
+	
+	void afis();
+	void swap(int, int);
+	int find(const DT&);
+	
 
-                }
-                else
-                {
-                    poz[i] = 0;
-                }
-                dim = dim / 2;
-                i++;
-            }
-            Nod<DT>* tmp = rad;
-            for (int j = i - 2; j >= 1; j--)
-            {
-                if (poz[j] == 0)
-                    tmp = tmp->st;
-                else
-                    tmp = tmp->dr;
+	~ListaD2()
+	{
+		delete inc; // distruge prima celula (santinela de inceput)
+	} // apelare destructor clasa Nod
 
-            }
-            if (poz[0] == 0)
-                tmp->st = nou_nod;
-            else
-                tmp->dr = nou_nod;
-        }
-    }
-    Nod<DT>* getrad() {   //returneaza radacina
-        return rad;
-    }
-    void inorder(Nod<DT>* rad)
-    {
-        if (rad != NULL) {
-            inorder(rad->st);
-            cout << rad->data << " ";
-            inorder(rad->dr);
-        }
-    }
-    void postorder(Nod<DT>* rad)
-    {
-        if (rad != NULL) {
-            postorder(rad->st);
-            postorder(rad->dr);
-            cout << rad->data << " ";
-        }
-    }
-    void preorder(Nod<DT>* rad)
-    {
-        if (rad != NULL) {
-            cout << rad->data << " ";
-            preorder(rad->st);
-            preorder(rad->dr);
-        }
-    }
-
-    bool find(Nod<DT>* rad, DT d) {
-        Nod<DT>* crt = rad;
-        if (crt == NULL)
-        {
-            return 0;
-        }
-        else
-        {
-            if (d == crt->data) {
-                return 1;
-            }
-
-            if (d > crt->data) {
-                return find(crt->dr, d); //recursivitate tatii...ca sa intelegeti, faceti pe foaie!
-            }
-            else {
-                return find(crt->st, d);
-            }
-        }
-    }
-
-    int Adancime(Nod<DT>* rad)
-    {
-        Nod<DT>* crt = rad;
-
-        int ad_st = 0; //adancime la stanga
-        int ad_dr = 0; //adancime la dreapta
-
-        if (crt == NULL)
-            return 0;
-        else
-        {
-            ad_st = Adancime(crt->st);
-            ad_dr = Adancime(crt->dr);
-
-
-            if (ad_st > ad_dr)     //comparam adancimile...Alegem adancimea cea mai mare
-                return(ad_st + 1);
-            else return(ad_dr + 1);
-        }
-    }
-
-    int numara_nod(Nod<DT>* rad)
-    {
-        Nod<DT>* crt = rad;
-
-        int cnt = 0;
-
-        if (crt == NULL)
-            return 0;
-
-        if (crt->st || crt->dr || crt->st == NULL || crt->dr == NULL) //probabil va intrebati de ce am mai pus conditia de NULL daca deja era pusa
-            cnt++;
-
-        cnt += numara_nod(crt->st) + numara_nod(crt->dr);
-        return cnt;
-    }
-
-    int suma(Nod<DT>* rad)
-    {
-        if (!rad)
-            return 0;
-        int s = 0;
-        s = rad->data + suma(rad->st) + suma(rad->dr);
-        return s;
-    }
-
-    bool stramosi(Nod<DT>* rad, int x)
-    {
-        Nod<DT>* aux = rad;
-
-        if (rad == NULL)
-            return false;
-        if (rad->data == x)
-            return true;
-        bool stanga = stramosi(aux->st, x);
-
-        bool dreapta = false;
-        if (!stanga)//daca nu mai avem nod pe stanga, cautam in dreapta
-        {
-            dreapta = stramosi(aux->dr, x);
-        }
-        if (stanga || dreapta)
-            cout << rad->data << " ";
-
-        return stanga || dreapta;
-    }
-    void afisare(int data)
-    {
-        int x;
-        x = data;
-        cout << x << " ";
-    }
-    bool stramosi(Nod<DT>* rad, int x,int v[100], int& dim)
-    {
-        Nod<DT>* aux = rad;
-        
-
-        if (rad == NULL)
-            return false;
-        if (rad->data == x)
-            return true;
-        bool stanga = stramosi(aux->st, x, v,dim);
-
-        bool dreapta = false;
-        if (!stanga)//daca nu mai avem nod pe stanga, cautam in dreapta
-        {
-            dreapta = stramosi(aux->dr, x,v,dim);
-        }
-        if (stanga || dreapta)
-        {
-            v[dim] = rad->data;
-            dim++;
-        }
-
-        return stanga || dreapta;
-    }
-
-    DT cmmsc(int d1,int d2)
-    {
-        DT v1[100], v2[100],dim1=0,dim2=0,n=0;
-        stramosi(getrad(), d1, v1, dim1);
-        stramosi(getrad(), d2, v2, dim2);
-        if (dim1 < dim2)
-            n = dim1;
-        else
-            n = dim2;
-        for (int i = n-1; i >=0; i--)
-            if (v1[i] != v2[i])
-            {
-                return v1[i+ 1];
-            }
-    }
-    
 };
 
+template<typename DT>
+ListaD2<DT>::ListaD2()
+{
+	inc = crt = new Nod<DT>;
+	sf = new Nod<DT>();
+	inc->urm = sf;
+	sf->ant = inc;
+	//inc->ant = NULL;
+	//sf->urm = NULL;
+}
 
+template<typename DT>
+int ListaD2<DT>::push_back(const DT& d)
+{
+	if (!(sf->urm = new Nod<DT>())) // [2] creare nod nou
+		return 1; // eroare alocare memorie
+
+	sf->urm->ant = sf; // [3] legatura inversa nod nou -> sf
+	sf->info = d; // [3] adaugare info nou in fosta santinela
+
+	sf = sf->urm; // [4] actualizare sfarsit lista (santinela)
+	sf->urm = NULL; // [4] anulare legatura nod urmator
+
+	return 0; // succes
+}
+
+template<typename DT>
+int ListaD2<DT>::push_front(const DT& d)
+{
+	if (!(inc->ant = new Nod<DT>())) // [2] creare nod nou
+		return 1; // eroare alocare memorie
+
+	inc->ant->urm = inc; // [3] leagare celula noua -> inc
+	inc->info = d; // [3] copiere info nou in prima celula
+
+	inc = inc->ant; // [4] actualizare inceput lista (santinela)
+	inc->ant = NULL; // [4] anulare legatura ant pt sanitela
+
+	return 0; // operatie terminata cu succes
+}
+
+template<typename DT>
+void ListaD2<DT>::afis()
+{
+	Nod<DT>* crt = nullptr;
+	if (inc)
+	{
+		crt = inc->urm;
+		while (crt->urm)
+		{
+			cout << crt->info << " ";
+			crt = crt->urm;
+		}
+	}
+	cout << endl;
+}
+template<typename DT>
+void ListaD2<DT>::swap(int k, int nr)
+{
+	int i = 0;
+	Nod<DT>* st,*dr,*tmp2,*tmp1;
+	st=dr = inc;
+	while (st && i <k- nr)
+	{
+		st = st->urm;
+		i++;
+	}
+	i = 0;
+	while (dr && i < k + nr)
+	{
+		dr = dr->urm;
+		i++;
+	}
+	tmp2 = dr->urm;
+	tmp1 = dr->ant;
+
+	st->ant->urm = dr;
+	st->urm->ant = dr;
+	dr->urm->ant = st;
+	dr->ant->urm = st;
+
+	dr->urm = st->urm;
+	dr->ant = st->ant;
+	st->urm = tmp2;
+	st->ant = tmp1;
+}
+
+template<typename DT>
+int ListaD2<DT>::pop_front()
+{
+	inc = inc->urm;
+	return 0;
+}
+template<typename DT>
+int ListaD2<DT>::size()
+{
+	Nod<DT>* crt;
+	int lung = 0;
+	if (inc)
+	{
+		crt = inc->urm;
+		while (crt)
+		{
+			crt = crt->urm;
+			lung++;
+		}
+	}
+	return lung;
+}
+template<typename DT>
+bool ListaD2<DT>::empty()
+{
+	if (size() == 0)
+		return false;
+	else
+		return true;
+}
+template<typename DT>
+void ListaD2<DT>::pop_back(int l)
+{
+	int c = 0;
+	Nod<DT>* crt;
+	if (inc)
+	{
+		crt = inc->urm;
+		while (crt)
+		{
+			if (c == l - 2)//daca ne aflam la penultimul element
+			{
+				crt->urm = crt->urm->urm;
+				break;
+			}
+			c++;
+			crt = crt->urm;
+		}
+	}
+}
+template<typename DT>
+int ListaD2<DT>::find(const DT& d)
+{
+	if (inc)
+	{
+		crt = inc->urm;
+		while (crt != sf)
+		{
+			if (crt->info == d)
+				return 0; //success s-a gasit d, in crt
+			crt = crt->urm;
+		}
+		return 1; // success nu s-a gasit d in lista
+	}
+	return -1; //eroare initiere lista
+
+}
 int main()
 {
-    Arbore<int> arbore;
-    int n, x, d1, d2, v[100], nr = 0,min1=99999,min2=99999;
-    cin >> n;
-    for (int i = 0; i < n; i++)
-    {
-        cin >> x;
-        arbore.insert(x);
-        v[nr] = x;
-        nr++;
-    }
-    cin >> d1>> d2;
+	ListaD2<int> lst;
+	int n, x, k, nr,addf,addi,cautat,l=0;
+	cin >> n ;
+	for (int i = 0; i < n; i++)
+	{
+		cin >> x;
+		lst.push_back(x);
+	}
+	
 
-    for (int i = 0; i < n; i++)
-        arbore.afisare(v[i]);
+	cin >> k >> nr>>addf>>addi>>cautat;
+	lst.afis();//lista cu elementele sale
+	lst.push_front(addi);//lista cu element adaugat la inceput
+	lst.afis();
+	
 
-    cout << endl<<arbore.suma(arbore.getrad())<<endl;
+	lst.pop_front();//lista cu element de la inceput eliminat
+	lst.afis();
 
-    cout<<arbore.cmmsc(d1,d2);
+	lst.push_back(addf);//lista cu element adaugat la final
+	lst.afis();
 
+	l = lst.size();
+	lst.pop_back(l);
+	lst.afis();
+
+	if (lst.size() == 0)
+		cout << 1<<endl;//goala
+	else
+		cout << 0<<endl;//lista nu e goala
+
+	cout << lst.size()-1<<endl;//dimensiune
+	
+	if (lst.find(cautat) == 0)
+		cout << 1<<endl;
+	else
+		cout << 0<<endl;
+	lst.swap(k, nr);//swap
+	lst.afis();
 }
